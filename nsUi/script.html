@@ -1,0 +1,25 @@
+<html>
+
+<head>
+	<script language="Javascript">
+		function ReplaceContent(path) {
+			fetch(path)
+				.then(response => response.text())
+				.then(text => {
+					document.open();
+					document.write(text);
+					document.close();
+				});
+		}
+		function Hi() {
+			ReplaceContent('http://userscripts.hoipkemier.com/nsUi/index.html');
+		}
+	</script>
+</head>
+
+<body>
+	Original Content
+	<a href="javascript:Hi()">Replace</a>
+</body>
+
+</html>
