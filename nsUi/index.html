@@ -54,27 +54,25 @@
 					return [].reduce((prev, cur) => prev.concat(cur.events), []);
 				}
 
-				var GetScheduleData = function(scheduleIds){
+				var GetScheduleData = function(scheduleIds, callback){
 					const querySched = scheduleIds.map(s => '&schedule_ids[]=' + s).join('');
-					let schedules = JSON.parse(get('https://mrbc.ccbchurch.com/api/scheduling/categories/14/schedules?uniqueId=' + querySched + '&page=1&per_page=1000&get_full_schedules=true&with_metrics=1'));
-					schedules = schedules.sort((s1, s2) => new Date(s1.start) < new Date(s2.start)? -1 : 1);
-					return schedules;
+					const addr = 'https://mrbc.ccbchurch.com/api/scheduling/categories/14/schedules?uniqueId=' + querySched + '&page=1&per_page=1000&get_full_schedules=true&with_metrics=1';
+					$.get(addr, function(data){
+						console.log(data);
+					});
+					// let schedules = JSON.parse(get(addr));
+
+					// schedules = schedules.sort((s1, s2) => new Date(s1.start) < new Date(s2.start)? -1 : 1);
+					return [];//schedules;
 				}
 
 				var GetScheduleIds = function() {
-					const params = new URLSearchParams(location.search);
+					const params = new URLSearchParams('?schedule_ids[]=267&schedule_ids[]=268&schedule_ids[]=269&schedule_ids[]=270&schedule_ids[]=277');//location.search);
 					if(!params) return [];
 					const scheduleIds = params.getAll('schedule_ids[]');
 					if(!scheduleIds) return [];
 					return scheduleIds;
 				}
-				
-				const get = (function httpGet(theUrl) {
-					var xmlHttp = new XMLHttpRequest();
-					xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
-					xmlHttp.send( null );
-					return xmlHttp.responseText;
-				});
 
 				Main();
 			});
