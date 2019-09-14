@@ -6,7 +6,6 @@
 		<script>
 			$(function() {
 				console.log( "ready!" );
-				Main();
 
 				var Main = function(){
 					var schedules = GetScheduleData(GetScheduleIds());
@@ -69,6 +68,8 @@
 					if(!scheduleIds) return [];
 					return scheduleIds;
 				}
+
+				Main();
 			});
 		</script>
 	</body>
