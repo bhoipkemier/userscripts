@@ -12,68 +12,6 @@
 					$('.bodyCont').append(GetTable(schedules));
 				}
 
-				var GetTable = function(schedules){
-					let lastHeader = '';
-					var events = GetEvents(schedules);
-					var toReturn = $('<table></table>');
-					events.forEach(event => {
-						const curHeader = GetHeaderHtml();
-						if(curHeader !== lastHeader){
-							lastHeader = curHeader;
-							toReturn.append(curHeader);
-						}
-						toReturn.append(GetEventRow(event));
-					});
-					return toReturn;
-				}
-
-				var GetEventRow = function(event){
-					const dateText = new Date(event.start).toLocaleDateString() + ' ' + new Date(event.start).toLocaleTimeString().replace(':00 ', ' ');
-					const toReturn = $('<tr/>')
-					toReturn.append($('<td/>').text(dateText));
-					GetEventPositions(event).forEach(position => {
-						const cell = $('<td/>');
-						var names = position.assignments
-							.map(a => a.volunteer.individual.name)
-							.join(', ');
-						cell.text(names);
-						toReturn.append(cell);
-					});
-					return toReturn;
-				}
-
-				var GetEventPositions = (event) => event.event_teams.flatMap(t => t.event_positions);
-
-				var GetHeaderHtml = function(event){
-					const positionCells = GetEventPositions(event)
-						.map(p => '<th>' + p.position.name + '</th>');
-					return '<tr><th>Date/Time</th>' + positionCells.join('') + '</tr>';
-				}
-
-				var GetEvents = function(schedules){
-					return [].reduce((prev, cur) => prev.concat(cur.events), []);
-				}
-
-				var GetScheduleData = function(scheduleIds, callback){
-					const querySched = scheduleIds.map(s => '&schedule_ids[]=' + s).join('');
-					const addr = 'https://mrbc.ccbchurch.com/api/scheduling/categories/14/schedules?uniqueId=' + querySched + '&page=1&per_page=1000&get_full_schedules=true&with_metrics=1';
-					$.get(addr, function(data){
-						console.log(data);
-					});
-					// let schedules = JSON.parse(get(addr));
-
-					// schedules = schedules.sort((s1, s2) => new Date(s1.start) < new Date(s2.start)? -1 : 1);
-					return [];//schedules;
-				}
-
-				var GetScheduleIds = function() {
-					const params = new URLSearchParams('?schedule_ids[]=267&schedule_ids[]=268&schedule_ids[]=269&schedule_ids[]=270&schedule_ids[]=277');//location.search);
-					if(!params) return [];
-					const scheduleIds = params.getAll('schedule_ids[]');
-					if(!scheduleIds) return [];
-					return scheduleIds;
-				}
-
 				Main();
 			});
 		</script>
