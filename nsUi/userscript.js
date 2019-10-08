@@ -49,7 +49,8 @@ var workerCount = {};
 
 	var addHoipEvents = (function() {
 		$('.hoipUI').on('click', '.people .person', activatePerson)
-			.on('click', '.addToEvent', addToEvent);
+			.on('click', '.addToEvent', addToEvent)
+			.on('click', '.passign.person', activateAssignmentPerson)
 	});
 
 	var addToEvent = (function() {
@@ -77,7 +78,17 @@ var workerCount = {};
 		const eventid = data[0].event_position_id;
 		const td = $('.eventID[value="' + eventid + '"]').closest('td');
 		const container = $('.eventContainer',td);
-		addVolunteer(container, data[0].volunteer);
+		addVolunteer(container, data[0].volunteer, true);
+		updateCounts();
+	});
+
+	var activateAssignmentPerson = (function() {
+		$('.active').removeClass('active');
+		const personId = $('input[type="hidden"]', this).val();
+		$('.tblAvailability .person input[value="'+personId+'"]').closest('.person').addClass('active');
+		$('.people .personID[value="' + personId + '"]')
+			.closest('.person')
+			.addClass('active');
 	});
 
 	var activatePerson = (function() {
@@ -196,11 +207,12 @@ var workerCount = {};
 		return toReturn;
 	}
 
-	var addVolunteer = (function(container, volunteer){
+	var addVolunteer = (function(container, volunteer, shouldActivate){
 		var passign = $('<a href="javascript:void" class="passign person list-group-item"/>')
 			.text(volunteer.individual.name)
 			.append('<a href="javascript:void" class="btn badge"><i class="glyphicon glyphicon-trash removePassign"></i></a>')
 			.append($('<input type="hidden" />').val(volunteer.individual.id));
+		if(shouldActivate) passign.addClass('active');
 		container.append(passign);
 	});
 
