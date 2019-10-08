@@ -9,7 +9,6 @@
 // @require      https://code.jquery.com/jquery-1.12.4.min.js
 // ==/UserScript==
 
-// curl "https://mrbc.ccbchurch.com/api/scheduling/event_positions/4562/assignments" -H "sec-fetch-mode: cors" -H "origin: https://mrbc.ccbchurch.com" -H "accept-encoding: gzip, deflate, br" -H "accept-language: en-US,en;q=0.9,en-CA;q=0.8" -H "cookie: __cfduid=d0d3ef46962a5de6d9df822fcc28348891570280086; screen-size=SIZE/LARGE; sidebar-opened=true; _ga=GA1.2.903768189.1570280091; _gid=GA1.2.466744206.1570280091; PHPSESSID=8c0c3b1baff9c088eda6af2639f87b83; _uiq_id.603070201.d525=fe12c19898493989.1570280091.0.1570281160..; _gat=1" -H "pragma: no-cache" -H "x-newrelic-id: VQIGWVdRCxACUFhUBAcCUlA=" -H "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36" -H "content-type: application/json;charset=UTF-8" -H "accept: application/json, text/plain, */*" -H "cache-control: no-cache" -H "authority: mrbc.ccbchurch.com" -H "referer: https://mrbc.ccbchurch.com/goto/scheduling/14/grid?schedule_ids^[^]=105" -H "sec-fetch-site: same-origin" --data-binary "^{^\^"individual_ids^\^":^[2806^],^\^"status^\^":null,^\^"update_existing_status^\^":false,^\^"update_notified^\^":false,^\^"notify_schedule_organizer^\^":false^}" --compressed
 
 var curWorkers = [];
 var workerCount = {};
@@ -57,6 +56,28 @@ var workerCount = {};
 		const eventid = $('.eventID', $(this).closest('td')).val();
 		const personid = $('.people .person.active .personID').val();
 		console.log('Add eventId: ' + eventid + ' personId: ' + personid);
+		
+		$.ajax({
+			contentType: 'application/json',
+			type: "POST",
+			url: 'https://mrbc.ccbchurch.com/api/scheduling/event_positions/' + eventid + '/assignments',
+			data: JSON.stringify({
+				"individual_ids":[personid],
+				"status":null,
+				"update_existing_status":false,
+				"update_notified":false,
+				"notify_schedule_organizer":false
+			}),
+			success: addSuccess,
+			dataType: 'json'
+		});
+	});
+
+	var addSuccess = (function(data){
+		const eventid = data[0].event_position_id;
+		const td = $('.eventID[value="' + eventid + '"]').closest('td');
+		const container = $('.eventContainer',td);
+		addVolunteer(container, data[0].volunteer);
 	});
 
 	var activatePerson = (function() {
@@ -167,17 +188,21 @@ var workerCount = {};
 			cell.append($('<input type="hidden" class="eventID" />').val(position.id))
 
 			position.assignments.forEach(assignment => {
-				var passign = $('<a href="javascript:void" class="passign person list-group-item"/>')
-					.text(assignment.volunteer.individual.name)
-					.append('<a href="javascript:void" class="btn badge"><i class="glyphicon glyphicon-trash removePassign"></i></a>')
-					.append($('<input type="hidden" />').val(assignment.volunteer.individual.id));
-				eventContainer.append(passign);
+				addVolunteer(eventContainer, assignment.volunteer);
 			});
 			cell.append('<button class="addToEvent">Add to Event</button');
 			toReturn.append(cell);
 		});
 		return toReturn;
 	}
+
+	var addVolunteer = (function(container, volunteer){
+		var passign = $('<a href="javascript:void" class="passign person list-group-item"/>')
+			.text(volunteer.individual.name)
+			.append('<a href="javascript:void" class="btn badge"><i class="glyphicon glyphicon-trash removePassign"></i></a>')
+			.append($('<input type="hidden" />').val(volunteer.individual.id));
+		container.append(passign);
+	});
 
 	var getEventPositions = (event) => event.event_teams.flatMap(t => t.event_positions);
 
