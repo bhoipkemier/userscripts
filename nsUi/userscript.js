@@ -19,7 +19,7 @@ var workerCount = {};
 		.tblAvailability { background-color: #fff; }
 		.tblAvailability th { text-align: center;background-color: #ccc;}
 		.tblAvailability td { vertical-align: text-top;}
-		.tblAvailability th,.tblAvailability td { border: 1px solid #000; }
+		.tblAvailability th,.tblAvailability td { border: 2px solid #000; }
 		.passign .badge { display: none }
 		.active.passign .badge { display: block }
 		.eventContainer { padding-bottom: 15px; }
@@ -51,6 +51,21 @@ var workerCount = {};
 		$('.hoipUI').on('click', '.people .person', activatePerson)
 			.on('click', '.addToEvent', addToEvent)
 			.on('click', '.passign.person', activateAssignmentPerson)
+			.on('click', '.passign .badge', deletePerson);
+	});
+
+	var deletePerson = (function(){
+		var assignmentId = $('.assignId', $(this).closest('.passign')).val();
+		$.ajax({
+			type: "DELETE",
+			url: 'https://mrbc.ccbchurch.com/api/scheduling/assignments/' + assignmentId,
+			success: function(){ deleteSuccess(assignmentId); }
+		});
+	});
+
+	var deleteSuccess = (function(assignmentId){
+		$('.assignId[value="'+assignmentId+'"]').closest('.passign').remove();
+		updateCounts();
 	});
 
 	var addToEvent = (function() {
@@ -78,14 +93,14 @@ var workerCount = {};
 		const eventid = data[0].event_position_id;
 		const td = $('.eventID[value="' + eventid + '"]').closest('td');
 		const container = $('.eventContainer',td);
-		addVolunteer(container, data[0].volunteer, true);
+		addVolunteer(container, data[0], true);
 		updateCounts();
 	});
 
 	var activateAssignmentPerson = (function() {
 		$('.active').removeClass('active');
-		const personId = $('input[type="hidden"]', this).val();
-		$('.tblAvailability .person input[value="'+personId+'"]').closest('.person').addClass('active');
+		const personId = $('input.indivId[type="hidden"]', this).val();
+		$('.tblAvailability .person input.indivId[value="'+personId+'"]').closest('.person').addClass('active');
 		$('.people .personID[value="' + personId + '"]')
 			.closest('.person')
 			.addClass('active');
@@ -95,7 +110,7 @@ var workerCount = {};
 		$('.active').removeClass('active');
 		$(this).addClass('active');
 		const personId = $('.personID', this).val();
-		$('.tblAvailability .person input[value="'+personId+'"]').closest('.person').addClass('active');
+		$('.tblAvailability .person input.indivId[value="'+personId+'"]').closest('.person').addClass('active');
 	});
 
 	var fetchNurseryWorkers = (function(){
@@ -199,7 +214,7 @@ var workerCount = {};
 			cell.append($('<input type="hidden" class="eventID" />').val(position.id))
 
 			position.assignments.forEach(assignment => {
-				addVolunteer(eventContainer, assignment.volunteer);
+				addVolunteer(eventContainer, assignment);
 			});
 			cell.append('<button class="addToEvent">Add to Event</button');
 			toReturn.append(cell);
@@ -207,11 +222,13 @@ var workerCount = {};
 		return toReturn;
 	}
 
-	var addVolunteer = (function(container, volunteer, shouldActivate){
+	var addVolunteer = (function(container, assignment, shouldActivate){
+		var volunteer = assignment.volunteer;
 		var passign = $('<a href="javascript:void" class="passign person list-group-item"/>')
 			.text(volunteer.individual.name)
 			.append('<a href="javascript:void" class="btn badge"><i class="glyphicon glyphicon-trash removePassign"></i></a>')
-			.append($('<input type="hidden" />').val(volunteer.individual.id));
+			.append($('<input type="hidden" class="assignId" />').val(assignment.id))
+			.append($('<input type="hidden" class="indivId" />').val(volunteer.individual.id));
 		if(shouldActivate) passign.addClass('active');
 		container.append(passign);
 	});
