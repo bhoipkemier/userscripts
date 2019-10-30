@@ -161,7 +161,7 @@ var workerCount = {};
 	var updateCounts = function(){
 		const counter = {};
 		$('.passign').each(function(){
-			const id = $('input', this).val();
+			const id = $('input.indivId', this).val();
 			if(!counter[id]) { counter[id] = 0; }
 			++counter[id];
 		});
